@@ -3,7 +3,7 @@ import numpy
 import matplotlib.pyplot as plt
 
 #Parameters
-chunk=1024*2
+chunk=1024*4
 c=299e6
 Fc=2.4e9
 Fs=44100
@@ -30,9 +30,9 @@ stream = pyaud.open(
 
 print "Opened microphone"
 
-for x in range(0,5):
-        data = stream.read(chunk)
-        print "butts"
+##for x in range(0,5):
+##        data = stream.read(chunk)
+##        print "butts"
 
 keepGoing=True
 plt.show()
@@ -48,7 +48,10 @@ while keepGoing:
         #plt.draw()
         #plt.draw()
         peakIndex = numpy.argmax(fftData)
-        print "Peak freq "+str(peakIndex) + " which is " + str(fftFreqs[peakIndex]*Fs) + " Hz"
+        freqHz = fftFreqs[peakIndex]*Fs
+        print "Peak freq "+str(peakIndex) + " which is " + str(freqHz) + " Hz"
+        velocityMetersSec = (freqHz*c)/(Fc)
+        print "   "+str(velocityMetersSec)+" m/s"
         keepGoing=True
 
 print "Data accquired"
