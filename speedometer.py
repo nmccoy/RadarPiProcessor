@@ -1,9 +1,10 @@
 import pyaudio
 import numpy
 import matplotlib.pyplot as plt
+import time
 
 #Parameters
-chunk=1024*4
+chunk=1024*8
 c=299e6
 Fc=2.4e9
 Fs=44100
@@ -35,6 +36,7 @@ print "Opened microphone"
 ##        print "butts"
 
 keepGoing=True
+threshVal=0
 plt.show()
 while keepGoing:
         data = stream.read(chunk)
@@ -48,10 +50,17 @@ while keepGoing:
         #plt.draw()
         #plt.draw()
         peakIndex = numpy.argmax(fftData)
+	maxVal = numpy.max(fftData)
         freqHz = fftFreqs[peakIndex]*Fs
-        print "Peak freq "+str(peakIndex) + " which is " + str(freqHz) + " Hz"
-        velocityMetersSec = (freqHz*c)/(Fc)
-        print "   "+str(velocityMetersSec)+" m/s"
+#        print "Peak freq "+str(peakIndex) + " which is " + str(freqHz) + " Hz"
+	ms = int(round(time.time()*1000))
+	if(threshVal == 0):
+		threshVal = maxVal*3
+	if(maxVal > threshVal):
+        	velocityMetersSec = (freqHz*c)/(Fc)
+	else:
+		velocityMetersSec = 0.0
+        print "   "+str(velocityMetersSec)+" m/s at " +str(ms)+" ms"
         keepGoing=True
 
 print "Data accquired"
