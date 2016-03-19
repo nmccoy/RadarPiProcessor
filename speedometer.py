@@ -6,6 +6,10 @@ import pygame
 import sys
 from pygame.locals import *
 
+visuals = True
+dualChannel = True
+verbose = True
+
 #Display
 RESOLUTION = ( 1280, 1024 )
 #RESOLUTION = ( 500, 400 )
@@ -29,11 +33,16 @@ numRows=200
 #plt.ion()
 #graph = plt.plot(X,Y)[0]
 
+def debug(debugStr):
+	if(verbose):
+		print debugStr
+
 # Initialize gui and return a screen
 def start_gui():
         pygame.init()
         screen = pygame.display.set_mode(RESOLUTION)
         pygame.display.set_caption('Hello world!')
+	pygame.mouse.set_visible(False)
         update_speed(screen,0)
         return screen
         
@@ -63,14 +72,26 @@ def gui_loop():
                 if event.type == QUIT:
                     pygame.quit()
                     sys.exit()
-
 #Initialize PyAudio
+debug("Initializing Audio")
 pyaud = pyaudio.PyAudio()
+debug("Audio Initialized")
+
+
+#Start GUI
+if(visuals):
+	debug("Starting GUI")
+	screen = start_gui()
+	debug("GUI Started")
 
 # Open input stream, 16-bit stereo at 44100 Hz
+if(dualChannel):
+	defChans = 2
+else:
+	defChans = 1
 stream = pyaud.open(
         format = pyaudio.paInt16,
-        channels = 2,
+        channels = defChans,
         rate = Fs,
 #       input_device_index = 2, # Automatically picks one if commented
         input = True,
@@ -82,14 +103,18 @@ print "Opened microphone"
 ##        data = stream.read(chunk)
 ##        print "butts"
 
-screen=start_gui()
+#screen=start_gui()
 keepGoing=True
 threshVal=0
-plt.show()
+#plt.show()
+#time.sleep(3)
 while keepGoing:
         data = stream.read(chunk)
         decoded = numpy.fromstring(data,dtype=numpy.int16)
-        left = decoded[0::2]
+        if(dualChannel):
+		left = decoded[0::2]
+	else:
+		left = decoded
         #right = decoded[1::2]
         #fftData = numpy.absolute(numpy.fft.fftshift(numpy.fft.fft(left,nfft)))
         fftData = numpy.absolute(numpy.fft.fft(left,nfft))[0:nfft/2]
@@ -108,9 +133,10 @@ while keepGoing:
                 velocityMetersSec = (freqHz*c)/(Fc)
         else:
                 velocityMetersSec = 0.0
-        #print "   "+str(velocityMetersSec)+" m/s at " +str(ms)+" ms"
-        update_speed(screen,"{0:.1f}".format(velocityMetersSec))
-        gui_loop()
+        print "   "+str(velocityMetersSec)+" m/s at " +str(ms)+" ms"
+        if(visuals):
+		update_speed(screen,"{0:.1f}".format(velocityMetersSec))
+        	gui_loop()
         keepGoing=True
 
 print "Data accquired"
