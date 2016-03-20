@@ -41,39 +41,39 @@ def debug(debugStr):
 
 # Initialize gui and return a screen
 def start_gui():
-        pygame.init()
-        screen = pygame.display.set_mode(RESOLUTION)
-        pygame.display.set_caption('Hello world!')
+	pygame.init()
+	screen = pygame.display.set_mode(RESOLUTION)
+	pygame.display.set_caption('Hello world!')
 	pygame.mouse.set_visible(False)
-        update_speed(screen,0)
-        return screen
-        
+	update_speed(screen,0)
+	return screen
+	
 def update_speed(screen,speed):
-        # set up fonts
-        basicFont = pygame.font.Font(None, 300)
-        smallFont = pygame.font.Font(None, 100)
-        # set up the text       
-        speedText = basicFont.render(str(speed), True, BLUE)
-        msText = smallFont.render('meters/sec',True,BLUE)
-        textRect = speedText.get_rect()
-        textRect.centerx = screen.get_rect().centerx
-        textRect.centery = screen.get_rect().centery
-        msRect = msText.get_rect()
-        msRect.centerx = screen.get_rect().centerx
-        msRect.centery = screen.get_rect().centery+300
-        # draw the white background onto the surface
-        screen.fill(WHITE)
-        # draw the text onto the surface
-        screen.blit(speedText, textRect)
-        screen.blit(msText,msRect)
-        # draw the window onto the screen
-        pygame.display.update()
+	# set up fonts
+	basicFont = pygame.font.Font(None, 300)
+	smallFont = pygame.font.Font(None, 100)
+	# set up the text       
+	speedText = basicFont.render(str(speed), True, BLUE)
+	msText = smallFont.render('meters/sec',True,BLUE)
+	textRect = speedText.get_rect()
+	textRect.centerx = screen.get_rect().centerx
+	textRect.centery = screen.get_rect().centery
+	msRect = msText.get_rect()
+	msRect.centerx = screen.get_rect().centerx
+	msRect.centery = screen.get_rect().centery+300
+	# draw the white background onto the surface
+	screen.fill(WHITE)
+	# draw the text onto the surface
+	screen.blit(speedText, textRect)
+	screen.blit(msText,msRect)
+	# draw the window onto the screen
+	pygame.display.update()
 
 def gui_loop():
-        for event in pygame.event.get():
-                if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+	for event in pygame.event.get():
+		if event.type == QUIT:
+		    pygame.quit()
+		    sys.exit()
 #Initialize PyAudio
 debug("Initializing Audio")
 pyaud = pyaudio.PyAudio()
@@ -92,12 +92,12 @@ if(dualChannel):
 else:
 	defChans = 1
 stream = pyaud.open(
-        format = pyaudio.paInt16,
-        channels = defChans,
-        rate = Fs,
+	format = pyaudio.paInt16,
+	channels = defChans,
+	rate = Fs,
 #       input_device_index = 2, # Automatically picks one if commented
-        input = True,
-        frames_per_buffer = chunk)
+	input = True,
+	frames_per_buffer = chunk)
 
 print "Opened microphone"
 
@@ -107,44 +107,40 @@ print "Opened microphone"
 
 #screen=start_gui()
 keepGoing=True
-threshVal=0
+threshVals=None
 #plt.show()
 #time.sleep(3)
 while keepGoing:
-        data = stream.read(chunk)
-        decoded = numpy.fromstring(data,dtype=numpy.int16)
-        if(dualChannel):
+	data = stream.read(chunk)
+	decoded = numpy.fromstring(data,dtype=numpy.int16)
+	if(dualChannel):
 		left = decoded[0::2]
 	else:
 		left = decoded
-        #right = decoded[1::2]
-        #fftData = numpy.absolute(numpy.fft.fftshift(numpy.fft.fft(left,nfft)))
-        fftData = numpy.absolute(numpy.fft.fft(left,nfft))[0:nfft/2]
-        fftFreqs = numpy.fft.fftfreq(len(fftData)*2)
-        #graph.set_ydata(fftData)
-        #plt.draw()
-        #plt.draw()
-        peakIndex = numpy.argmax(fftData)
-        maxVal = numpy.max(fftData)
-        freqHz = fftFreqs[peakIndex]*Fs
-#        print "Peak freq "+str(peakIndex) + " which is " + str(freqHz) + " Hz"
-        ms = int(round(time.time()*1000))
-        if(threshVal == 0):
-                threshVal = maxVal*3
-        if(maxVal > threshVal):
-                velocityMetersSec = (freqHz*c)/(Fc)
-        else:
-                velocityMetersSec = 0.0
+
+	fftData = numpy.absolute(numpy.fft.fft(left,nfft))[0:nfft/2]
+	fftFreqs = numpy.fft.fftfreq(len(fftData)*2)
+
+	peakIndex = numpy.argmax(fftData)
+	maxVal = numpy.max(fftData)
+	freqHz = fftFreqs[peakIndex]*Fs
+	ms = int(round(time.time()*1000))
+	if(threshVals == None):
+		threshVals = fftData
+	if(maxVal > threshVals[peakIndex]):
+		velocityMetersSec = (freqHz*c)/(Fc)
+	else:
+		velocityMetersSec = 0.0
 	if(verbose):
-        	print "   "+str(velocityMetersSec)+" m/s at " +str(ms)+" ms"
-        if(visuals):
+		print "   "+str(velocityMetersSec)+" m/s at " +str(ms)+" ms"
+	if(visuals):
 		update_speed(screen,"{0:.1f}".format(velocityMetersSec))
-        	gui_loop()
+		gui_loop()
 	if(logging):
 		with open('log.csv','a') as csvfile:
 			logwriter = csv.writer(csvfile)
 			logwriter.writerow([velocityMetersSec,peakIndex]+fftData.tolist())
-        keepGoing=True
+	keepGoing=True
 
 print "Data accquired"
 stream.stop_stream()
