@@ -10,7 +10,7 @@ import csv
 visuals = True
 dualChannel = True
 verbose = True
-logging = True
+logging = False
 
 #Display
 RESOLUTION = ( 1280, 1024 )
@@ -126,7 +126,7 @@ while keepGoing:
 	freqHz = fftFreqs[peakIndex]*Fs
 	ms = int(round(time.time()*1000))
 	if(threshVals == None):
-		threshVals = fftData
+		threshVals = fftData*1.2
 	if(maxVal > threshVals[peakIndex]):
 		velocityMetersSec = (freqHz*c)/(Fc)
 	else:
