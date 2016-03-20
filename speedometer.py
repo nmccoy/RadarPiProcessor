@@ -5,10 +5,12 @@ import time
 import pygame
 import sys
 from pygame.locals import *
+import csv
 
 visuals = True
 dualChannel = True
 verbose = True
+logging = True
 
 #Display
 RESOLUTION = ( 1280, 1024 )
@@ -138,6 +140,10 @@ while keepGoing:
         if(visuals):
 		update_speed(screen,"{0:.1f}".format(velocityMetersSec))
         	gui_loop()
+	if(logging):
+		with open('log.csv','a') as csvfile:
+			logwriter = csv.writer(csvfile)
+			logwriter.writerow([velocityMetersSec,peakIndex]+fftData.tolist())
         keepGoing=True
 
 print "Data accquired"
