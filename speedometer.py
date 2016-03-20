@@ -20,7 +20,7 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 #Parameters
-chunk=1024*8
+chunk=1024*16
 c=299e6
 Fc=2.4e9
 Fs=44100
@@ -133,7 +133,8 @@ while keepGoing:
                 velocityMetersSec = (freqHz*c)/(Fc)
         else:
                 velocityMetersSec = 0.0
-        print "   "+str(velocityMetersSec)+" m/s at " +str(ms)+" ms"
+	if(verbose):
+        	print "   "+str(velocityMetersSec)+" m/s at " +str(ms)+" ms"
         if(visuals):
 		update_speed(screen,"{0:.1f}".format(velocityMetersSec))
         	gui_loop()
